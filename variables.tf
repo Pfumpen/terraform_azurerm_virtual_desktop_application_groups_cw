@@ -141,30 +141,46 @@ variable "role_assignments" {
 # Diagnostic Settings
 #------------------------------------------------------------------------------
 
+variable "diagnostics_level" {
+  description = "Defines the detail level for diagnostics. Possible values: 'none', 'basic', 'detailed', 'custom'."
+  type        = string
+  default     = "none"
+  validation {
+    condition     = contains(["none", "basic", "detailed", "custom"], var.diagnostics_level)
+    error_message = "Valid values for diagnostics_level are 'none', 'basic', 'detailed', or 'custom'."
+  }
+}
+
 variable "diagnostic_settings" {
+  description = "A map containing the destination IDs for diagnostic settings. When diagnostics are enabled, exactly one destination must be specified."
   type = object({
-    enabled                        = optional(bool, false)
     log_analytics_workspace_id     = optional(string)
     eventhub_authorization_rule_id = optional(string)
     storage_account_id             = optional(string)
-    log_categories                 = optional(list(string), [])
-    metric_categories              = optional(list(string), [])
   })
-  description = <<EOT
-(Optional) A map of diagnostic settings to apply to the Application Group.
-- `enabled` - (Optional) Whether to enable diagnostic settings. Defaults to `false`.
-- `log_analytics_workspace_id` - (Optional) The resource ID of the Log Analytics Workspace to send diagnostics to.
-- `eventhub_authorization_rule_id` - (Optional) The resource ID of the Event Hub Authorization Rule to send diagnostics to.
-- `storage_account_id` - (Optional) The resource ID of the Storage Account to send diagnostics to.
-- `log_categories` - (Optional) A list of log categories to send to the diagnostic settings.
-- `metric_categories` - (Optional) A list of metric categories to send to the diagnostic settings.
-EOT
-  default     = {}
+  default = {}
 
   validation {
-    condition     = !try(var.diagnostic_settings.enabled, false) || (try(var.diagnostic_settings.log_analytics_workspace_id, null) != null || try(var.diagnostic_settings.eventhub_authorization_rule_id, null) != null || try(var.diagnostic_settings.storage_account_id, null) != null)
-    error_message = "When diagnostic_settings are enabled, at least one destination (Log Analytics, Event Hub, or Storage Account) must be specified."
+    # This rule ensures that if diagnostics are enabled, the user provides exactly one valid destination.
+    condition = var.diagnostics_level == "none" || (
+      (try(var.diagnostic_settings.log_analytics_workspace_id, null) != null ? 1 : 0) +
+      (try(var.diagnostic_settings.eventhub_authorization_rule_id, null) != null ? 1 : 0) +
+      (try(var.diagnostic_settings.storage_account_id, null) != null ? 1 : 0) == 1
+    )
+    error_message = "When 'diagnostics_level' is not 'none', exactly one of 'log_analytics_workspace_id', 'eventhub_authorization_rule_id', or 'storage_account_id' must be specified in the 'diagnostic_settings' object."
   }
+}
+
+variable "diagnostics_custom_logs" {
+  description = "A list of log categories to enable when diagnostics_level is 'custom'."
+  type        = list(string)
+  default     = []
+}
+
+variable "diagnostics_custom_metrics" {
+  description = "A list of metric categories to enable when diagnostics_level is 'custom'. Use ['AllMetrics'] for all."
+  type        = list(string)
+  default     = []
 }
 
 #------------------------------------------------------------------------------

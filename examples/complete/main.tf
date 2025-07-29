@@ -53,11 +53,9 @@ module "virtual_desktop_application_group" {
       principal_id               = "f8e33a27-934e-4438-a8a3-d758376f36a3" # This is a placeholder GUID
     }
   }
+  diagnostics_level = "detailed"
   diagnostic_settings = {
-    enabled                    = true
     log_analytics_workspace_id = azurerm_log_analytics_workspace.example.id
-    log_categories             = ["Checkpoint", "Error", "Management"]
-    metric_categories          = ["AllMetrics"]
   }
   tags = {
     "environment" = "dev"

@@ -65,8 +65,10 @@ module "virtual_desktop_application_group" {
     }
   }
 
-  enable_telemetry           = true
-  log_analytics_workspace_id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/my-rg/providers/Microsoft.OperationalInsights/workspaces/my-la"
+  diagnostics_level = "detailed"
+  diagnostic_settings = {
+    log_analytics_workspace_id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/my-rg/providers/Microsoft.OperationalInsights/workspaces/my-la"
+  }
 
   tags = {
     "environment" = "production"
@@ -88,10 +90,10 @@ module "virtual_desktop_application_group" {
 | `default_desktop_display_name` | The display name for the default desktop. This is conditionally required if `type` is `Desktop` and portal access is needed. | `string` | `null` | no |
 | `remote_applications` | A map of RemoteApp applications to create and associate with this group. This should only be used when `type` is `RemoteApp`. | `map(object)` | `{}` | no |
 | `role_assignments` | A map of role assignments to create on the application group. | `map(object)` | `{}` | no |
-| `enable_telemetry` | Controls whether diagnostic settings are enabled. | `bool` | `true` | no |
-| `log_analytics_workspace_id` | The resource ID of an existing Log Analytics Workspace for diagnostics. | `string` | `null` | no |
-| `eventhub_authorization_rule_id` | The resource ID of an existing Event Hub Authorization Rule for diagnostics. | `string` | `null` | no |
-| `storage_account_id` | The resource ID of an existing Storage Account for diagnostics. | `string` | `null` | no |
+| `diagnostics_level` | Defines the detail level for diagnostics. Possible values: 'none', 'basic', 'detailed', 'custom'. | `string` | `"basic"` | no |
+| `diagnostic_settings` | A map containing the destination IDs for diagnostic settings. When diagnostics are enabled, exactly one destination must be specified. | `object` | `{}` | no |
+| `diagnostics_custom_logs` | A list of log categories to enable when diagnostics_level is 'custom'. | `list(string)` | `[]` | no |
+| `diagnostics_custom_metrics` | A list of metric categories to enable when diagnostics_level is 'custom'. Use ['AllMetrics'] for all. | `list(string)` | `[]` | no |
 | `tags` | A map of tags to assign to the resources. | `map(string)` | `{}` | no |
 
 ### `remote_applications`
