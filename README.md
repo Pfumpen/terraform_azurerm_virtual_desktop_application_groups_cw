@@ -10,7 +10,7 @@ This Terraform module creates and manages an Azure Virtual Desktop Application G
 - For `RemoteApp` groups, creates and associates a collection of `virtual_desktop_application` resources from a complex variable.
 - For `Desktop` groups, configures the default desktop display name.
 - Implements standardized Role-Based Access Control (RBAC) using a `role_assignments` map variable to assign roles on the application group scope.
-- Implements standardized Diagnostic Settings to send logs and metrics to a pre-existing Log Analytics Workspace, Event Hub, or Storage Account.
+- Implements a self-adapting diagnostic settings pattern, which dynamically discovers available log and metric categories at runtime. This eliminates configuration errors and the need for manual research.
 - Supports descriptive friendly names and descriptions.
 - Standardized tagging for all created resources.
 
@@ -65,7 +65,7 @@ module "virtual_desktop_application_group" {
     }
   }
 
-  diagnostics_level = "detailed"
+  diagnostics_level = "all"
   diagnostic_settings = {
     log_analytics_workspace_id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/my-rg/providers/Microsoft.OperationalInsights/workspaces/my-la"
   }
@@ -90,10 +90,10 @@ module "virtual_desktop_application_group" {
 | `default_desktop_display_name` | The display name for the default desktop. This is conditionally required if `type` is `Desktop` and portal access is needed. | `string` | `null` | no |
 | `remote_applications` | A map of RemoteApp applications to create and associate with this group. This should only be used when `type` is `RemoteApp`. | `map(object)` | `{}` | no |
 | `role_assignments` | A map of role assignments to create on the application group. | `map(object)` | `{}` | no |
-| `diagnostics_level` | Defines the detail level for diagnostics. Possible values: 'none', 'basic', 'detailed', 'custom'. | `string` | `"basic"` | no |
+| `diagnostics_level` | Defines the desired diagnostic intent. 'all' and 'audit' are dynamically mapped to available categories. Possible values: 'none', 'all', 'audit', 'custom'. | `string` | `"none"` | no |
 | `diagnostic_settings` | A map containing the destination IDs for diagnostic settings. When diagnostics are enabled, exactly one destination must be specified. | `object` | `{}` | no |
-| `diagnostics_custom_logs` | A list of log categories to enable when diagnostics_level is 'custom'. | `list(string)` | `[]` | no |
-| `diagnostics_custom_metrics` | A list of metric categories to enable when diagnostics_level is 'custom'. Use ['AllMetrics'] for all. | `list(string)` | `[]` | no |
+| `diagnostics_custom_logs` | A list of specific log categories to enable when diagnostics_level is 'custom'. | `list(string)` | `[]` | no |
+| `diagnostics_custom_metrics` | A list of specific metric categories to enable. Use ['AllMetrics'] for all. | `list(string)` | `["AllMetrics"]` | no |
 | `tags` | A map of tags to assign to the resources. | `map(string)` | `{}` | no |
 
 ### `remote_applications`

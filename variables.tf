@@ -16,20 +16,12 @@ variable "resource_group_name" {
   type        = string
   description = "(Required) The name of the existing Resource Group where the resources will be deployed."
 
-  validation {
-    condition     = length(var.resource_group_name) > 0
-    error_message = "The resource_group_name cannot be empty."
-  }
 }
 
 variable "location" {
   type        = string
   description = "(Required) The Azure region for the deployment."
 
-  validation {
-    condition     = length(var.location) > 0
-    error_message = "The location cannot be empty."
-  }
 }
 
 variable "host_pool_id" {
@@ -142,12 +134,12 @@ variable "role_assignments" {
 #------------------------------------------------------------------------------
 
 variable "diagnostics_level" {
-  description = "Defines the detail level for diagnostics. Possible values: 'none', 'basic', 'detailed', 'custom'."
+  description = "Defines the desired diagnostic intent. 'all' and 'audit' are dynamically mapped to available categories. Possible values: 'none', 'all', 'audit', 'custom'."
   type        = string
   default     = "none"
   validation {
-    condition     = contains(["none", "basic", "detailed", "custom"], var.diagnostics_level)
-    error_message = "Valid values for diagnostics_level are 'none', 'basic', 'detailed', or 'custom'."
+    condition     = contains(["none", "all", "audit", "custom"], var.diagnostics_level)
+    error_message = "Valid values for diagnostics_level are 'none', 'all', 'audit', or 'custom'."
   }
 }
 
@@ -161,7 +153,6 @@ variable "diagnostic_settings" {
   default = {}
 
   validation {
-    # This rule ensures that if diagnostics are enabled, the user provides exactly one valid destination.
     condition = var.diagnostics_level == "none" || (
       (try(var.diagnostic_settings.log_analytics_workspace_id, null) != null ? 1 : 0) +
       (try(var.diagnostic_settings.eventhub_authorization_rule_id, null) != null ? 1 : 0) +
@@ -172,15 +163,15 @@ variable "diagnostic_settings" {
 }
 
 variable "diagnostics_custom_logs" {
-  description = "A list of log categories to enable when diagnostics_level is 'custom'."
+  description = "A list of specific log categories to enable when diagnostics_level is 'custom'."
   type        = list(string)
   default     = []
 }
 
 variable "diagnostics_custom_metrics" {
-  description = "A list of metric categories to enable when diagnostics_level is 'custom'. Use ['AllMetrics'] for all."
+  description = "A list of specific metric categories to enable. Use ['AllMetrics'] for all."
   type        = list(string)
-  default     = []
+  default     = ["AllMetrics"]
 }
 
 #------------------------------------------------------------------------------
