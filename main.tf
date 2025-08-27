@@ -20,4 +20,10 @@ resource "azurerm_virtual_desktop_application_group" "this" {
   default_desktop_display_name = var.type == "Desktop" ? var.default_desktop_display_name : null
 
   tags = local.tags
+
+  lifecycle {
+    ignore_changes = [
+      tags,
+    ]
+  }
 }
