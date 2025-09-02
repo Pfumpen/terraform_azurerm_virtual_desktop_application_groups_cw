@@ -1,7 +1,3 @@
-#------------------------------------------------------------------------------
-# Diagnostic Settings
-#------------------------------------------------------------------------------
-
 locals {
   global_diagnostics_enabled = var.diagnostics_level != "none"
 
@@ -24,25 +20,20 @@ locals {
   active_metrics = local.global_diagnostics_enabled && length(try(local.data_source_output.metrics, [])) > 0 ? var.diagnostics_custom_metrics : []
 }
 
-# This data source is only executed when diagnostics are enabled.
 data "azurerm_monitor_diagnostic_categories" "this" {
   count = local.global_diagnostics_enabled ? 1 : 0
 
-  # IMPORTANT: Change this to the ID of the primary resource of your module
   resource_id = azurerm_virtual_desktop_application_group.this.id
 }
 
 resource "azurerm_monitor_diagnostic_setting" "this" {
   count = local.global_diagnostics_enabled ? 1 : 0
 
-  # IMPORTANT: Use a unique name for the diagnostic setting
   name                           = "diag-${var.name}"
   target_resource_id             = data.azurerm_monitor_diagnostic_categories.this[0].resource_id
   log_analytics_workspace_id     = try(var.diagnostic_settings.log_analytics_workspace_id, null)
   eventhub_authorization_rule_id = try(var.diagnostic_settings.eventhub_authorization_rule_id, null)
   storage_account_id             = try(var.diagnostic_settings.storage_account_id, null)
-
-  # The dynamic blocks below consume the pre-calculated lists from locals.
 
   dynamic "enabled_log" {
     for_each = toset(local.active_log_groups)

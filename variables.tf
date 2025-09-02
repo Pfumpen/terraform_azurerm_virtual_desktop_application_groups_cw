@@ -73,15 +73,15 @@ variable "default_desktop_display_name" {
 
 variable "remote_applications" {
   type = map(object({
-    name                        = string
-    friendly_name               = optional(string)
-    description                 = optional(string)
-    path                        = string
+    name                         = string
+    friendly_name                = optional(string)
+    description                  = optional(string)
+    path                         = string
     command_line_argument_policy = string
-    command_line_arguments      = optional(string)
-    show_in_portal              = optional(bool, true)
-    icon_path                   = optional(string)
-    icon_index                  = optional(number)
+    command_line_arguments       = optional(string)
+    show_in_portal               = optional(bool, true)
+    icon_path                    = optional(string)
+    icon_index                   = optional(number)
   }))
   description = "(Optional) A map of RemoteApp applications to create and associate with this group. This should only be used when `type` is `RemoteApp`."
   default     = {}
